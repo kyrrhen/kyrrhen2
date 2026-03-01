@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题管理系统 - 首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        /* 背景粒子容器 + 全局样式，缩减整体留白 */
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem; /* 大幅缩减上下左右留白 */
+            overflow: hidden; /* 隐藏粒子溢出 */
+            position: relative;
+        }
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.2rem; /* 缩减卡片间距，减少留白 */
+            margin-top: 1.5rem; /* 缩减标题与卡片间距 */
+            position: relative;
+            z-index: 1; /* 卡片层级高于粒子 */
+        }
+        /* 玻璃风卡片优化：呼吸渐变动效 + 缩减内边距 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem 1.8rem; /* 缩减内边距，紧凑布局 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem; /* 缩减卡片内元素间距 */
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            transition: all 0.4s ease;
+            animation: breath 4s infinite alternate; /* 呼吸渐变动效 */
+        }
+        @keyframes breath {
+            0% { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.18); }
+            100% { background: rgba(255, 255, 255, 0.18); border-color: rgba(255, 255, 255, 0.25); }
+        }
+        .glass-card:hover {
+            transform: translateY(-6px) scale(1.02); /* 上浮+轻微放大，强化hover */
+            box-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            animation: none; /* hover时暂停呼吸动效 */
+        }
+        /* 标题样式优化：紧凑排版 */
+        .page-title {
+            color: #fff;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 1;
+            margin-bottom: 0.5rem; /* 缩减标题底部留白 */
+        }
+        .card-title {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+        }
+        /* 科目选择框：渐变反馈 + 无额外留白 */
+        .subject-select {
+            width: 100%;
+            height: 52px;
+            padding: 0 1.2rem;
+            background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .subject-select:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+        }
+        .subject-select option {
+            color: #333;
+            background: rgba(102, 126, 234, 0.9);
+        }
+        /* 按钮优化：波纹动效 + 渐变背景 + 紧凑尺寸 */
+        .card-btn {
+            width: 100%;
+            height: 52px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.15));
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden; /* 隐藏波纹溢出 */
+        }
+        /* 按钮波纹动效 */
+        .card-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        .card-btn:not(:disabled):click::after {
+            width: 300px;
+            height: 300px;
+        }
+        .card-btn:disabled {
+            background: rgba(255, 255, 255, 0.08);
+            cursor: not-allowed;
+            color: rgba(255, 255, 255, 0.5);
+            animation: none;
+        }
+        .card-btn:not(:disabled):hover {
+            background: linear-gradient(90deg, rgba(255,255,255,0.35), rgba(255,255,255,0.2));
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+        /* 提示文本：紧凑排版 */
+        .tip-text {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.9rem;
+            text-align: center;
+            line-height: 1.4; /* 缩减行高 */
+            margin-top: 0.3rem;
+        }
+        /* 响应式适配：小屏幕仍保持紧凑 */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+            .glass-card {
+                padding: 1.8rem 1.5rem;
+                gap: 1rem;
+            }
+            .container {
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+        }
+        @media (max-width: 420px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .glass-card {
+                padding: 1.5rem 1.2rem;
+            }
+        }
+
+        /* 新增登录相关样式 */
+        /* 登录按钮样式 */
+        .login-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 2;
+            width: auto;
+            padding: 0 1.5rem;
+            height: 44px;
+            font-size: 1rem;
+        }
+        /* 用户信息展示 */
+        .user-info {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 2;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1.2rem;
+            border-radius: 22px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .logout-btn {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.85rem;
+            height: auto;
+            width: auto;
+        }
+        /* 登录弹窗样式 */
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .login-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .login-box {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .login-title {
+            color: #fff;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        .input-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .login-input {
+            width: 100%;
+            height: 50px;
+            padding: 0 1.2rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .login-input:focus {
+            border-color: #fff;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+        }
+        .login-submit {
+            width: 100%;
+            height: 52px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        .login-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102,126,234,0.3);
+        }
+        .close-modal {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.2s ease;
+        }
+        .close-modal:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .error-tip {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .error-tip.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景粒子动效容器 -->
+    <div id="particles"></div>
+
+    <!-- 登录按钮/用户信息 -->
+    <div id="loginArea">
+        <button class="card-btn login-btn" id="showLoginBtn">登录</button>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-box">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h3 class="login-title">用户登录</h3>
+            <div class="input-group">
+                <label class="input-label">用户名</label>
+                <input type="text" class="login-input" id="username" placeholder="请输入用户名">
+            </div>
+            <div class="input-group">
+                <label class="input-label">密码</label>
+                <input type="password" class="login-input" id="password" placeholder="请输入密码">
+            </div>
+            <p class="error-tip" id="errorTip">用户名或密码错误</p>
+            <button class="login-submit" id="loginSubmit">登录</button>
+        </div>
+    </div>
+
+    <!-- 页面标题 -->
+    <h1 class="page-title">错题管理系统</h1>
+    <!-- 核心功能容器：四大分区 -->
+    <div class="container">
+        <!-- 第一分区：科目选择区 -->
+        <div class="glass-card">
+            <h2 class="card-title">科目选择</h2>
+            <select class="subject-select" id="subjectSelect">
+                <option value="" selected disabled>请选择对应科目</option>
+                <option value="math">数学</option>
+                <option value="chinese">语文</option>
+                <option value="english">英语</option>
+                <option value="physics">物理</option>
+                <option value="chemistry">化学</option>
+                <option value="biology">生物</option>
+            </select>
+            <p class="tip-text">选择后联动所有功能分区</p >
+        </div>
+        <!-- 第二分区：错题上传区 -->
+        <div class="glass-card">
+            <h2 class="card-title">错题上传</h2>
+            <button class="card-btn" id="uploadBtn" disabled>点击上传错题</button>
+            <p class="tip-text">需选科并登录账号</p >
+        </div>
+        <!-- 第三分区：错题下载区 -->
+        <div class="glass-card">
+            <h2 class="card-title">错题下载</h2>
+            <button class="card-btn" id="downloadBtn" disabled>点击下载错题</button>
+            <p class="tip-text">选科后跳转对应科目题库</p >
+        </div>
+        <!-- 第四分区：公共错题区 -->
+        <div class="glass-card">
+            <h2 class="card-title">公共错题</h2>
+            <button class="card-btn" id="publicBtn">查看所有人错题</button>
+            <p class="tip-text">无需选科，直接查看共享资源</p >
+        </div>
+    </div>
+
+    <!-- 粒子动效 + 核心交互JS -->
+    <script>
+        // 1. 背景粒子动效（轻量版，无额外依赖）
+        const particles = document.getElementById('particles');
+        const particleCount = 40; // 粒子数量，可调整
+        for (let i = 0; i < particleCount; i++) {
+            const dot = document.createElement('div');
+            dot.style.position = 'absolute';
+            dot.style.width = `${Math.random() * 4 + 1}px`;
+            dot.style.height = dot.style.width;
+            dot.style.background = 'rgba(255,255,255,0.6)';
+            dot.style.borderRadius = '50%';
+            dot.style.left = `${Math.random() * 100}%`;
+            dot.style.top = `${Math.random() * 100}%`;
+            dot.style.opacity = Math.random() * 0.8 + 0.2;
+            dot.style.animation = `float ${Math.random() * 10 + 10}s infinite linear alternate`;
+            dot.style.zIndex = 0;
+            particles.appendChild(dot);
+        }
+        // 粒子漂浮动画
+        document.styleSheet = document.styleSheets[0];
+        document.styleSheet.insertRule(`
+            @keyframes float {
+                0% {
+                    transform: translate(0, 0) rotate(0deg);
+                }
+                50% {
+                    transform: translate(${Math.random() * 50 - 25}px, ${Math.random() * 50 - 25}px) rotate(180deg);
+                }
+                100% {
+                    transform: translate(0, 0) rotate(360deg);
+                }
+            }
+        `, document.styleSheet.cssRules.length);
+
+        // 2. 登录系统核心逻辑
+        const loginModal = document.getElementById('loginModal');
+        const showLoginBtn = document.getElementById('showLoginBtn');
+        const closeModal = document.getElementById('closeModal');
+        const loginSubmit = document.getElementById('loginSubmit');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorTip = document.getElementById('errorTip');
+        const loginArea = document.getElementById('loginArea');
+        
+        // 模拟用户数据库（实际项目替换为后端接口验证）
+        const userDatabase = {
+            "admin": "123456",
+            "student1": "student123",
+            "teacher1": "teacher123"
+        };
+
+        // 登录状态管理
+        let isLogin = false; // 当前登录状态
+        let currentUser = ''; // 当前登录用户
+
+        // 初始化：检查本地存储的登录状态
+        function initLoginStatus() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                isLogin = true;
+                currentUser = savedUser;
+                updateLoginUI(); // 更新登录UI
+                updateButtonStatus(); // 更新按钮权限
+            }
+        }
+
+        // 更新登录相关UI
+        function updateLoginUI() {
+            if (isLogin) {
+                // 已登录：显示用户信息和注销按钮
+                loginArea.innerHTML = `
+                    <div class="user-info">
+                        <span>欢迎, ${currentUser}</span>
+                        <button class="card-btn logout-btn" id="logoutBtn">注销</button>
+                    </div>
+                `;
+                // 绑定注销事件
+                document.getElementById('logoutBtn').addEventListener('click', logout);
+            } else {
+                // 未登录：显示登录按钮
+                loginArea.innerHTML = `
+                    <button class="card-btn login-btn" id="showLoginBtn">登录</button>
+                `;
+                // 重新绑定登录按钮事件
+                document.getElementById('showLoginBtn').addEventListener('click', () => {
+                    loginModal.classList.add('active');
+                    errorTip.classList.remove('active');
+                });
+            }
+        }
+
+        // 登录验证
+        function login(username, password) {
+            if (userDatabase.hasOwnProperty(username) && userDatabase[username] === password) {
+                isLogin = true;
+                currentUser = username;
+                // 保存登录状态到本地存储
+                localStorage.setItem('currentUser', username);
+                loginModal.classList.remove('active');
+                updateLoginUI();
+                updateButtonStatus();
+                return true;
+            } else {
+                errorTip.classList.add('active');
+                return false;
+            }
+        }
+
+        // 注销登录
+        function logout() {
+            isLogin = false;
+            currentUser = '';
+            // 清除本地存储
+            localStorage.removeItem('currentUser');
+            updateLoginUI();
+            updateButtonStatus();
+            // 重置科目选择（可选）
+            subjectSelect.value = '';
+            subjectSelect.style.boxShadow = 'none';
+        }
+
+        // 3. 核心交互：科目联动 + 按钮跳转
+        const subjectSelect = document.getElementById('subjectSelect');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const publicBtn = document.getElementById('publicBtn');
+
+        // 更新按钮权限状态
+        function updateButtonStatus() {
+            const hasSubject = subjectSelect.value !== '';
+            downloadBtn.disabled = !hasSubject;
+            uploadBtn.disabled = !hasSubject || !isLogin;
+        }
+
+        // 科目选择联动逻辑
+        subjectSelect.addEventListener('change', function() {
+            const hasSubject = this.value !== '';
+            // 选科后添加渐变高亮反馈
+            if (hasSubject) {
+                this.style.boxShadow = '0 0 0 4px rgba(255,255,255,0.2)';
+            } else {
+                this.style.boxShadow = 'none';
+            }
+            updateButtonStatus();
+        });
+
+        // 按钮跳转（替换为实际项目路由即可）
+        uploadBtn.addEventListener('click', () => window.location.href = './upload.html');
+        downloadBtn.addEventListener('click', () => {
+            const subject = subjectSelect.value;
+            window.location.href = `./download.html?subject=${subject}`;
+        });
+        publicBtn.addEventListener('click', () => window.location.href = './public.html');
+
+        // 按钮波纹点击补全
+        const allBtns = document.querySelectorAll('.card-btn:not(:disabled)');
+        allBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const x = e.clientX - e.target.getBoundingClientRect().left;
+                const y = e.clientY - e.target.getBoundingClientRect().top;
+                const ripple = document.createElement('span');
+                ripple.style.position = 'absolute';
+                ripple.style.width = '1px';
+                ripple.style.height = '1px';
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                ripple.style.background = 'rgba(255,255,255,0.4)';
+                ripple.style.borderRadius = '50%';
+                ripple.style.animation = 'ripple 0.6s linear forwards';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+        // 波纹动画样式
+        document.styleSheet.insertRule(`
+            @keyframes ripple {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(300);
+                    opacity: 0;
+                }
+            }
+        `, document.styleSheet.cssRules.length);
+
+        // 4. 登录弹窗事件绑定
+        showLoginBtn.addEventListener('click', () => {
+            loginModal.classList.add('active');
+            errorTip.classList.remove('active');
+        });
+
+        closeModal.addEventListener('click', () => {
+            loginModal.classList.remove('active');
+            errorTip.classList.remove('active');
+            usernameInput.value = '';
+            passwordInput.value = '';
+        });
+
+        loginSubmit.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!username || !password) {
+                errorTip.textContent = '请输入用户名和密码';
+                errorTip.classList.add('active');
+                return;
+            }
+            login(username, password);
+        });
+
+        // 点击弹窗外层关闭弹窗
+        loginModal.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.classList.remove('active');
+                errorTip.classList.remove('active');
+                usernameInput.value = '';
+                passwordInput.value = '';
+            }
+        });
+
+        // 初始化
+        initLoginStatus();
+    </script>
+</body>
+</html>
